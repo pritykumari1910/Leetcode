@@ -1,0 +1,17 @@
+class Solution {
+public:
+    vector<vector<int>> subsets(vector<int>& nums) {
+        int n = nums.size();                        // Get the size of the input vector
+        int Mask = 1 << n;                           // Calculate the maximum number of subsets using bit manipulation
+        vector<vector<int>> powerSet(Mask);          // Create a vector to store all the subsets
+        
+        for (int m = 0; m < Mask; m++) {              // Iterate through all the possible combinations of subsets
+            for (int i = 0; i < n; i++) {             // Iterate through the elements of the input vector
+                if (m & (1 << i))                     // Check if the i-th bit of m is set
+                    powerSet[m].push_back(nums[i]);  // If the bit is set, add the corresponding element to the subset
+            }
+        }
+        
+        return powerSet;                             // Return the generated power set
+    }
+};

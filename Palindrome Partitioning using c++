@@ -1,0 +1,42 @@
+class Solution {
+public:
+bool palindromeCheck(string a , int start , int end)
+{
+    if(start >= end)
+    {
+        return true;
+    }
+    if(a[start] != a[end])
+    {
+        return false;
+    }
+   return palindromeCheck(a , start+1 , end-1);
+   
+    
+}
+ void helper(string s ,vector<vector<string>>& ans,vector<string>& ds,int n , int idx )
+ {
+     if(idx == n)
+     {
+         ans.push_back(ds);
+         return;
+     }
+     for(int i=idx;i<n;i++)
+     {
+          
+         if(palindromeCheck(s,idx,i))
+         {
+           ds.push_back(s.substr(idx , i - idx +1));
+           helper(s,ans,ds,n,i+1);
+           ds.pop_back();
+         }
+     }
+ }
+    vector<vector<string>> partition(string s) {
+        int n = s.length();
+        vector<vector<string>> ans;
+        vector<string> ds;
+        helper(s , ans , ds , n , 0 );
+        return ans;
+    }
+};

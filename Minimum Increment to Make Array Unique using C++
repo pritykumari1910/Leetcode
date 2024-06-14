@@ -1,0 +1,16 @@
+class Solution {
+public:
+    int minIncrementForUnique(vector<int>& nums) {
+        sort(nums.begin(),nums.end());
+        int numT=0;// Tracks the next unique number that should be set.
+        int miniI=0;// Counts the total increments required.
+
+        for(int num : nums){
+            numT=max(numT,num);
+            miniI+=numT-num; 
+            numT+=1; // Increment the tracker for the next number.
+        }
+    return miniI;
+
+    }
+};

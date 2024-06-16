@@ -1,0 +1,23 @@
+class Solution {
+public:
+    int minPatches(vector<int>& nums, int n) {
+        //sort(nums.begin(),nums.end());
+       int k =nums.size();
+        long long m=1;
+        int r=0;
+        size_t i=0;
+        while(m<=n){
+            if(i<k && nums[i]<=m){
+                m+=nums[i];
+                i++;
+            }
+            else{
+                m+=m;
+                r++;
+            }
+        }
+return r;
+
+        
+    }
+};

@@ -1,0 +1,44 @@
+class Solution {
+public:
+
+int canMakeB(vector<int>& bloomDay, int mid, int k) {
+        int numOfBouquets = 0;
+        int consecutive_count = 0;
+        
+        //Find count of consecutive flowers you can pick at mid day.
+        for (int i = 0; i < bloomDay.size(); i++) {
+            if (bloomDay[i] <= mid) {
+                consecutive_count++;
+            } else {
+                consecutive_count = 0;
+            }
+            if (consecutive_count == k) {
+                numOfBouquets++;
+                consecutive_count = 0;
+            }
+        }
+        return numOfBouquets;
+    }
+
+
+    int minDays(vector<int>& bloomDay, int m, int k) {
+        int n = bloomDay.size();
+        int s=0;
+        int e= *max_element(bloomDay.begin(),bloomDay.end());
+
+        int mind=-1;
+        while(s<=e){
+            int mid = s+(e-s)/2;
+            if(canMakeB(bloomDay, mid, k) >= m) {
+                mind=mid;
+                e=mid-1;
+
+            }
+            else{
+                s=mid+1;
+
+            }
+        }
+        return mind;
+    }
+};

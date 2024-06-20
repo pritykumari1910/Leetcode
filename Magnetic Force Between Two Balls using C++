@@ -1,0 +1,40 @@
+class Solution {
+public:
+bool possibletoP(int force,vector<int>&position,int m){
+          int prev= position[0];
+          int countB=1;
+          for(int i=1;i<position.size();i++){
+            int curr =position[i];
+
+            if(curr-prev>=force){
+                countB++;
+                prev=curr;
+            }
+            if(countB==m)
+                break;
+          }
+          return countB==m;
+}
+    int maxDistance(vector<int>& position, int m) {
+        int n = position.size();
+        sort(position.begin(),position.end());
+        int minf=1;
+        int maxf=position[n-1]-position[0];
+        int r=0;
+        while(minf<=maxf){
+            int midf=minf+(maxf-minf)/2;
+            if(possibletoP(midf,position,m)){
+                r=midf;
+                minf=midf+1;
+
+            }
+            else{
+                maxf=midf-1;
+
+            }
+
+        }
+        return r;
+        
+    }
+};

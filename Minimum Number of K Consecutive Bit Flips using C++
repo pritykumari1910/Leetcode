@@ -1,0 +1,25 @@
+class Solution {
+public:
+    int minKBitFlips(vector<int>& nums, int k) {
+        int  n = nums.size();
+        int f=0;
+        int r=0;
+        vector<int>isf(n,0);
+        for(int i=0;i<n;i++){
+            if(i>=k){
+                f^=isf[i-k];
+            }
+            if(f==nums[i]){
+                if(i+k>n){
+                    return -1;
+                }
+                isf[i]=1;
+                f^=1;
+                r++;
+            }
+        }
+        
+        return r;
+        
+    }
+};

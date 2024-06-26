@@ -1,0 +1,25 @@
+class Solution {
+public:
+vector<TreeNode*>sortedAr;
+    TreeNode* balanceBST(TreeNode* root) {
+        inorderT(root);
+        return sortedArToBST(0,sortedAr.size()-1);
+
+    }
+    void inorderT(TreeNode*root){
+        if(root==NULL)
+            return ;
+        inorderT(root->left);
+        sortedAr.push_back(root);
+        inorderT(root->right);    
+    }
+    TreeNode*sortedArToBST(int s,int e){
+        if(s>e)  
+           return NULL;
+        int mid=(s+e)/2;
+        TreeNode*root=sortedAr[mid];
+        root->left=sortedArToBST(s,mid-1);
+        root->right=sortedArToBST(mid+1,e);
+        return root;   
+    }
+};

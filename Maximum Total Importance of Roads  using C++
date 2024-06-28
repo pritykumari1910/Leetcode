@@ -1,0 +1,23 @@
+class Solution {
+public:
+    long long maximumImportance(int n, vector<vector<int>>& roads) {
+        vector<int>deg(n,0);
+
+        for(auto & vec:roads){
+            int u=vec[0];
+            int v=vec[1];
+
+            deg[u]++;
+            deg[v]++;
+        }
+        sort(deg.begin(),deg.end());
+        long long value=1;
+        long long sum=0;
+
+        for(int i=0;i<n;i++){
+            sum+=(deg[i]*value);
+            value++;
+        }
+        return sum;
+    }
+};

@@ -1,0 +1,23 @@
+class Solution {
+public:
+    int passThePillow(int n, int time) {
+        int ballp=0;
+        int dir=1;
+
+
+        for(int i=0;i<time;i++){
+            if(dir==1){
+                if(ballp==n-1)
+                    dir=-1;
+                    ballp+=dir;
+            }
+            else{
+                if(ballp==0) 
+                    dir=1;
+                    ballp+=dir;
+            }
+        }
+        return ballp+1;
+        
+    }
+};

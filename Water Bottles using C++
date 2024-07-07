@@ -1,0 +1,18 @@
+class Solution {
+public:
+    int numWaterBottles(int numBottles, int numExchange) {
+
+        int totalB=numBottles;
+        while(numBottles>=numExchange){
+            int newB=numBottles/numExchange;
+            int remaingB=numBottles%numExchange;
+            totalB +=newB;
+            numBottles=newB+remaingB;
+
+
+        }
+        return totalB;
+               
+        
+    }
+};

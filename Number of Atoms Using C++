@@ -1,0 +1,55 @@
+class Solution {
+public:
+    string countOfAtoms(string f) {
+        map<string,int> m;
+        f+=')';
+        int n=f.size();
+        stack<pair<string,int>> s;
+        s.push({"(",0});    //opening bracket to start
+
+        for(int i=0;i<n;){
+
+            if(f[i]>='A'&& f[i]<='Z'){  //if its a atom
+                int j=i;
+                string atom="";
+                atom+=f[j++];
+                while(f[j]>='a'&&f[j]<='z')  atom+=f[j++];  //get the full name of that atom
+
+                int freq=0;
+                while(f[j]>='0' && f[j]<='9')   freq=freq*10+f[j++]-'0';    //now get the frequency of that atom
+                if(freq==0) freq=1;
+                s.push({atom,freq});    //push it in the stack
+                i=j;
+            }
+            else if(f[i]==')'){ //if its a closing bracket
+
+                int j=i+1;
+                int freq=0;
+                while(j<n && f[j]>='0' && f[j]<='9')   
+                    freq=freq*10+f[j++]-'0';    //get the multiple of that bracket  
+                if(freq==0) freq=1;
+                //and remove current bracket atoms and put on just outer brackets with freq multiplied by multiple
+                stack<pair<string,int>> temp;
+                while(s.top().first!="("){
+                    auto t=s.top(); s.pop();
+                    temp.push({t.first,t.second*freq});
+                }
+                s.pop();
+                while(temp.size()){
+                    s.push(temp.top()); temp.pop();
+                }
+                i=j;
+            }
+            else if(f[i]=='(') { s.push({"(",0});   i++;}
+        }
+        while(s.size()){
+            auto t=s.top(); s.pop();
+           m[t.first]+=t.second;    //put the content of stack in a map at the end to get sorted order
+        }
+        string ans="";
+        for(auto x:m){
+            ans+=x.first+(x.second>1?to_string(x.second):"");   //keep frequency only if its more than 1
+        }  
+        return ans;
+    }
+};

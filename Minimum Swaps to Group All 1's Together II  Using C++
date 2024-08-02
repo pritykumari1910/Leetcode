@@ -1,0 +1,16 @@
+class Solution {
+public:
+    int minSwaps(vector<int>& nums) {
+        int n=nums.size();
+        int k=accumulate(nums.begin(),nums.end(),0);
+        int c=accumulate(nums.begin(),nums.begin()+k,0);
+
+        int mx=c;
+        for(int i=k;i<n+k;i++){
+            c+=nums[i%n]-nums[(i-k+n)%n];
+            mx=max(mx,c);
+        }
+        
+        return k-mx;
+    }
+};

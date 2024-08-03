@@ -1,0 +1,21 @@
+class Solution {
+public:
+    bool canBeEqual(vector<int>& target, vector<int>& arr) {
+        // int n =arr.size();
+        // int m=target.size();
+    //  return unordered_multiset<int>(arr.begin(), arr.end())==unordered_multiset<int>(target.begin(), target.end());
+
+
+vector<int>c1(1001); //assume that elements range from 0 to 1000.
+vector<int>c2(1001);
+for(int &v:target){
+    ++c1[v];
+}
+
+for(int &v:arr){
+    ++c2[v];
+}
+return c1==c2;
+
+    }
+};

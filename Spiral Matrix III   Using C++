@@ -1,0 +1,39 @@
+class Solution {
+public:
+    vector<vector<int>> spiralMatrixIII(int rows, int cols, int rstart, int cstart) {
+        
+         vector<vector<int>>directions={
+            {0,1},//east
+            {1,0},//south
+            {0,-1},//west
+            {-1,0} //north
+         };
+
+         vector<vector<int>>r;
+         int step=0; // how much step to take
+         int dir=0;  // in dir direction
+
+         r.push_back({rstart,cstart});
+
+         while(r.size()<rows*cols){
+            if(dir==0 || dir==2) // 0=east , 2=west
+            {
+                step++;
+            }
+
+            for(int i=0;i<step;i++){
+                rstart+=directions[dir][0];
+                cstart+=directions[dir][1];
+
+                if(rstart>=0 && rstart<rows && cstart>=0 && cstart<cols){ //valid cell
+                       r.push_back({rstart,cstart});
+                }
+            }
+
+            dir=(dir+1)%4;
+         }
+
+      return r;
+
+    }
+};

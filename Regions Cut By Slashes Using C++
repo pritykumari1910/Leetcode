@@ -1,0 +1,79 @@
+class Solution {
+    vector<int>p;
+    vector<int>r;
+    int c;
+
+public:
+    int regionsBySlashes(vector<string>& grid) {
+        int n=grid.size();
+        int dots=n+1;
+        p.resize(dots*dots);
+        r.resize(dots*dots,1);
+        c=0;
+       
+       
+        // Initialize Union-Find structure
+        for(int i=0;i<p.size();i++){
+            p[i]=i;
+        }
+
+        // Connect boundaries to the top-left corner (0,0)
+        for(int i=0;i<dots;i++){
+            for(int j=0;j<dots;j++){
+                if(i==0 || j==0 || i==n || j==n){
+                    int cell=i*dots+j;
+                    unionset(0,cell);
+                }
+            }
+        }
+
+
+        // Process each cell and connect regions based on slashes
+
+        for(int i=0;i<n;i++){
+            for(int j=0;j<n;j++){
+                if(grid[i][j]=='\\'){
+                    int c1=i*dots+j;
+                    int c2=(i+1)*dots+(j+1);
+                    unionset(c1,c2);
+
+                }
+                else if(grid[i][j]=='/'){
+                    int c1=(i+1)*dots+j;
+                    int c2=i*dots+(j+1);
+                    unionset(c1,c2);
+                }
+            }
+        }
+        return c;
+        
+        
+    }
+    private:
+    void unionset(int a,int b){
+        int pA=find(a);
+        int pB=find(b);
+        if(pA==pB){
+            c++;
+        }else{
+            if(r[pA]>r[pB]){
+                p[pB]=pA;
+            }
+            else if(r[pA]<r[pB]){
+                p[pA]=pB;
+
+            }
+            else{
+                p[pB]=pA;
+                r[pA]++;
+            }
+        }
+    }
+    int find(int a){
+        if(p[a]==a){
+            return a;
+        }
+        return p[a]=find(p[a]);
+    }
+};
+

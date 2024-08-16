@@ -1,0 +1,19 @@
+class Solution {
+public:
+    int maxDistance(vector<vector<int>>& arrays) {
+        int n=arrays.size();
+        int diff=0;
+        int mini=arrays[0][0];
+        int maxi=arrays[0].back();
+        for(int i=1;i<n;i++){
+            vector<int>arr=arrays[i];
+            int a0=arr[0],aN=arr.back();
+            diff=max({diff,aN-mini,maxi-a0});
+            mini=min(a0,mini);
+            maxi=max(aN,maxi);
+
+
+        }
+        return diff;
+    }
+};

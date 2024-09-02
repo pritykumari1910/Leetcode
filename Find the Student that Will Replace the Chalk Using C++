@@ -1,0 +1,18 @@
+class Solution {
+public:
+    int chalkReplacer(vector<int>& chalk, int k) {
+        long long totalc=0;
+        for(int studentc:chalk){
+            totalc+=studentc;
+        }
+        int remainingc=k % totalc;
+        int n=chalk.size();
+        for(int i=0;i<n;i++){
+           if(remainingc<chalk[i]){
+            return i;
+           }
+           remainingc -=chalk[i];
+        }
+        return 0;
+    }
+};

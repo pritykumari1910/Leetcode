@@ -1,0 +1,37 @@
+class Solution {
+public:
+    vector<int> xorQueries(vector<int>& arr, vector<vector<int>>& queries) {
+        int n =arr.size();
+        int m=queries.size();
+        vector<int>pre(n);
+        pre[0]=arr[0];
+
+
+        //compute prefix XOR array
+
+        for(int i=1;i<n;i++){
+            pre[i]=pre[i-1]^arr[i];
+        }
+
+        vector<int>res(m);
+
+        //answer each query
+
+
+        for(int j=0;j<m;j++){
+            int i=queries[j][0];
+            int k=queries[j][1];
+
+            if(i==0){
+                res[j]=pre[k];
+
+            }
+            else{
+                res[j]=pre[k]^pre[i-1];
+            }
+        }
+
+        return res;
+        
+    }
+};

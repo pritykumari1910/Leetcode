@@ -1,0 +1,37 @@
+class Solution {
+public:
+    int longestCommonPrefix(vector<int>& arr1, vector<int>& arr2) {
+        int  n=arr1.size();
+        int m =arr2.size();
+        unordered_map<int,int>pre;
+        for(auto & val:arr1){
+            int  num=val;
+            while(num>0){
+                pre[num]++;
+                num/=10;
+
+            }
+        }
+
+        int mx=INT_MIN;
+
+
+        for(auto & val: arr2){
+            int num=val;
+            int  l=log10(num)+1;
+
+            while(num>0){
+                if(pre.find(num)!=pre.end()){
+                    break;
+
+                }
+                num/=10;
+
+                l--;
+            }
+            mx=max(mx,l);
+        }
+        
+        return mx;
+    }
+};

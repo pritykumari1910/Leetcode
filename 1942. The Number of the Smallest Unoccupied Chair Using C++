@@ -1,0 +1,63 @@
+class Solution {
+public:
+    using info=array<int, 3>;// (arivial, leaving, chair)
+    using int2=array<int, 2>;// (leaving, chair)
+    static inline void set(int chair, unsigned* freeS){
+        auto [q, r]=div(chair, 32);
+        unsigned& block=freeS[q];
+        block|=(1u<<r);
+    }
+    static inline int find_least_remove(unsigned* freeS){
+        int i=0;
+        for(; freeS[i]==0; i++);
+        unsigned& block=freeS[i];
+        int r=__builtin_ctz(block);
+        block &=~(1u << r); // Clear that bit
+        return i*32+r;
+    }
+    static int smallestChair(vector<vector<int>>& times, int targetFriend) {
+        const int n=times.size();
+        vector<info> A(n);
+        for(int i=0; i<n; i++)
+            A[i]={times[i][0], times[i][1], i};
+        sort(A.begin(), A.end());
+
+        unsigned freeS[313];// Need 313 32-bit unsigned int for n<=1e4
+        memset(freeS, ~0, sizeof(freeS)); // all seats are free
+        // 1 heap for used
+        priority_queue<int2, vector<int2>, greater<int2>> used;
+
+        // Process each friend
+        for (auto& t : A) {
+            int arrival=t[0], leaving=t[1], index=t[2];
+            int chair; 
+            // Release the chair by the one who has left before the current arrival
+            while (!used.empty() && used.top()[0]<=arrival) {
+                chair = used.top()[1];
+                // set chair-th bit 
+                set(chair, freeS);
+
+                used.pop();
+            }
+            
+            // Assign the smallest free chair
+            chair=find_least_remove(freeS);
+            
+            // If this is the target friend, return their chair
+            if (index == targetFriend) 
+                return chair;
+            
+            // Add this friend's leaving time and chair to the used heap
+            used.push({leaving, chair});
+        }
+        
+        return -1; 
+    }
+};
+
+auto init = []() {
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    return 'c';
+}();

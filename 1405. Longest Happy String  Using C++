@@ -1,0 +1,71 @@
+class Solution {
+public:
+    string longestDiverseString(int a, int b, int c) {
+        // Priority queue to store the characters based on their frequency
+        // The priority queue will always keep the most frequent character at the top
+        priority_queue<pair<int, char>> pq;
+
+        // Push each character with its frequency into the priority queue if it exists (i.e., count > 0)
+        if (a > 0) pq.push({a, 'a'});
+        if (b > 0) pq.push({b, 'b'});
+        if (c > 0) pq.push({c, 'c'});
+
+        string result = "";  // This will store the final diverse string
+
+        // While there are at least two elements in the queue
+        while (pq.size() > 1) {
+            // Get the most frequent character
+            int freq1 = pq.top().first;
+            char c1 = pq.top().second;
+            pq.pop();  // Remove it from the queue
+
+            // If the string is too small to worry about repetition, simply append the character
+            if (result.size() <= 1) {
+                result += c1;
+                freq1--;  // Decrease its frequency as it's being used
+                // If there's still some occurrences left, push it back into the queue
+                if (freq1 > 0) pq.push({freq1, c1});
+            } 
+            // Otherwise, we need to ensure we don't add the same character more than twice consecutively
+            else {
+                // Check if the last two characters in the result are the same as the current character
+                if (result[result.size() - 1] == c1 && result[result.size() - 2] == c1) {
+                    // In this case, get the second most frequent character
+                    int freq2 = pq.top().first;
+                    char c2 = pq.top().second;
+                    pq.pop();  // Remove the second character from the queue
+
+                    // Add the second character to the result
+                    result += c2;
+                    freq2--;  // Decrease its frequency as it's being used
+
+                    // Push the characters back into the queue if they still have remaining counts
+                    if (freq2 > 0) pq.push({freq2, c2});
+                    if (freq1 > 0) pq.push({freq1, c1});
+                } 
+                // If no violation of the "no three consecutive characters" rule, add the current character
+                else {
+                    result += c1;
+                    freq1--;
+                    if (freq1 > 0) pq.push({freq1, c1});
+                }
+            }
+        }
+
+        // Handle the case when there's only one character left in the priority queue
+        if (pq.size() == 1) {
+            int freq1 = pq.top().first;
+            char c1 = pq.top().second;
+            
+            // Add it once or twice depending on the frequency (ensuring no three consecutive characters)
+            if (freq1 <= 1) {
+                result += c1;
+            } else {
+                result += c1;
+                result += c1;
+            }
+        }
+
+        return result;  // Return the final string
+    }
+};

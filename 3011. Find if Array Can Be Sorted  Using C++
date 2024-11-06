@@ -1,0 +1,35 @@
+class Solution {
+public:
+    bool canSortArray(vector<int>& nums) {
+        int n =nums.size();
+        int prevM=INT_MIN;
+        int currM=nums[0];
+        int currMi=nums[0];
+        int setB=countBits(nums[0]);
+
+        for(int i=1;i<n;i++){
+            if(setB==countBits(nums[i]))
+            {
+                currM=max(currM,nums[i]);
+                currMi=min(currMi,nums[i]);
+
+
+            }
+
+            else{
+                if(currMi<prevM)
+                    return false;
+                prevM=currM;
+                setB=countBits(nums[i]);
+                currMi=nums[i];
+                currM=nums[i];    
+            }
+        }
+  return currMi>prevM;
+
+    }
+    private:
+    int countBits(int num) {
+        return std::bitset<32>(num).count();
+    }
+};

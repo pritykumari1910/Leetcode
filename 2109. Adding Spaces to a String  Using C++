@@ -1,0 +1,16 @@
+class Solution {
+public:
+    string addSpaces(string s, vector<int>& spaces) {
+        int n =s.size();
+        string res;
+        int start=0;
+        for(int space:spaces)
+        {
+            res+=s.substr(start,space-start)+ " ";
+            start=space;
+        }
+        res+=s.substr(start);
+        return res;
+
+    }
+};

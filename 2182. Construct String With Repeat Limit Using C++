@@ -1,0 +1,44 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+  public:
+    // Helper function to check if cows can be placed with a given minimum distance
+    bool canPlaceCows(vector<int> &stalls, int k, int minDist) {
+        int count = 1; // Place the first cow
+        int lastPos = stalls[0]; // Position of the last placed cow
+
+        for (int i = 1; i < stalls.size(); i++) {
+            if (stalls[i] - lastPos >= minDist) {
+                count++; // Place another cow
+                lastPos = stalls[i]; // Update the position of the last placed cow
+                if (count == k) return true; // All cows placed successfully
+            }
+        }
+
+        return false; // Not all cows could be placed
+    }
+
+    int aggressiveCows(vector<int> &stalls, int k) {
+        // Sort the stalls
+        sort(stalls.begin(), stalls.end());
+
+        // Binary search on the minimum distance
+        int low = 1; // Minimum possible distance
+        int high = stalls.back() - stalls.front(); // Maximum possible distance
+        int result = 0;
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+
+            if (canPlaceCows(stalls, k, mid)) {
+                result = mid; // Update result as we want the maximum distance
+                low = mid + 1; // Try for a larger distance
+            } else {
+                high = mid - 1; // Try for a smaller distance
+            }
+        }
+
+        return result;
+    }
+};

@@ -1,0 +1,24 @@
+
+class Solution {
+public:
+    vector<int> arr , cost ;
+    int dp[400][500];
+    int n ;
+    int rec(int lev , int plan){
+        if(lev == n) return 0 ;
+        if(dp[lev][plan]!=-1 ) return dp[lev][plan];
+        if(arr[lev] <= plan ){
+            return rec(lev+1, plan);
+        }
+        int oneday = cost[0]+rec(lev+1 , arr[lev]);
+        int sevday = cost[1]+rec(lev +1, arr[lev]+6);
+        int thirtyday = cost[2]+rec(lev +1 , arr[lev]+29);
+        return dp[lev][plan]=min({oneday,sevday,thirtyday});
+    }
+    int mincostTickets(vector<int>& days, vector<int>& costs) {
+        memset(dp,-1,sizeof(dp));
+        arr = days , cost = costs;    
+        n = arr.size();
+        return rec(0 , 0 );
+    }
+};

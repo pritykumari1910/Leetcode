@@ -1,0 +1,27 @@
+class Solution {
+public:
+int maxScore(string s) {
+    int zeros = 0, ones = 0, maxScore = 0;
+
+    // Count total number of ones in the string
+    for (char ch : s) {
+        if (ch == '1') ones++;
+    }
+
+    // Iterate through the string, keeping count of zeros on the left and ones on the right
+    for (int i = 0; i < s.size() - 1; i++) {
+        if (s[i] == '0') {
+            zeros++;
+        } else {
+            ones--;
+        }
+        int score = zeros + ones;
+        if (score > maxScore) {
+            maxScore = score;
+        }
+    }
+
+    return maxScore;
+}
+    
+};

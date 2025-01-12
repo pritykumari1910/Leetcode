@@ -1,0 +1,65 @@
+class Solution {
+public:
+    bool canBeValid(string s, string locked) {
+        int n =s.size();
+        if(n%2==1)
+            
+            {
+                return false;
+
+            }
+
+            stack<int>openB,un;
+            //Iterate through the string to handle '(' and')' 
+
+            for(int i=0;i<n;i++)
+            {
+                if(locked[i]=='0')
+                {
+                    un.push(i);
+                }
+                else if(s[i]=='(')
+                {
+                    openB.push(i);
+                }
+                else if(s[i]==')')
+                {
+                    if(!openB.empty())
+                    {
+                        openB.pop();
+
+                    }
+                    else if(!un.empty())
+                    {
+                        un.pop();
+                    }
+                    else 
+                    {
+                        return false;
+                    }
+                }
+            }
+
+
+       //match remaining open brackets with unlocked char
+
+       while(!openB.empty()  && !un.empty() &&  openB.top()<un.top())
+       {
+        openB.pop();
+        un.pop();
+
+       } 
+
+
+       if(!openB.empty())
+       {
+        return false;
+       } 
+
+       return true;
+
+
+
+            
+    }
+};

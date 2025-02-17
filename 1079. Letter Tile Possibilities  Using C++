@@ -1,0 +1,28 @@
+class Solution {
+public:
+    int numTilePossibilities(string tiles) {
+        int n =tiles.size();
+        vector<int>c(26);
+        for(const char t:tiles)
+              ++c[t-'A'];
+        return dfs(c);      
+
+
+    }
+
+    private:
+    int dfs(vector<int>&c)
+    {
+        int possS=0;
+        for(int &C:c)
+
+        {
+            if(C==0)
+                continue;
+            --C;
+            possS+=1+dfs(c);
+            ++C;    
+        }
+        return possS;
+    }
+};

@@ -1,0 +1,34 @@
+class Solution {
+public:
+bool solveMem(int index,vector<int>& nums,int N,int target,vector<vector<int>>&dp){
+    //base case
+    
+    if(index>=N)
+       return 0;
+    if(target<0)
+       return 0;
+    if(target==0)
+       return 1;
+    if(dp[index][target]!=-1)
+       return dp[index][target];
+    bool incl = solveMem(index+1,nums,N,target-nums[index],dp);
+    bool excl = solveMem(index+1,nums,N,target-0,dp);
+    
+    return  dp[index][target]=incl or excl;
+}
+
+    bool canPartition(vector<int>& nums) {
+        int N=nums.size();
+          int total =0;
+          for(int i=0;i<N;i++){
+            total+=nums[i];
+        }
+        if(total&1)
+           return false;
+        int target = total/2;
+       // return solve(0,arr,N,target);
+       vector<vector<int>>dp(N,vector<int>(target+1,-1));
+       return solveMem(0,nums,N,target,dp);
+        
+    }
+};

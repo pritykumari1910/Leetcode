@@ -1,0 +1,58 @@
+using info = tuple<int, short, short, bool>; // (time, i, j, adjust)
+const static int d[5] = {0, 1, 0, -1, 0};
+class Solution {
+public:  
+    inline static bool isOutside(short i, short j, short n, short m) {
+        return i < 0 || i >= n || j < 0 || j >= m;
+    }
+    static uint64_t pack(int t, short i, int j, bool adj1){
+        return ((uint64_t)t<<32)+(i<<21)+(j<<11)+adj1;
+    }
+    static constexpr unsigned mask11=(1<<11)-1, mask10=(1<<10)-1;
+    static info unpack(uint64_t x) {
+        int t=x>>32;
+        short i=(x>>21) & mask11; // 11 bits mask
+        short j=(x>>11) & mask10; // 10 bits mask
+        bool adj=x&1;
+        return {t, i, j, adj};
+    }
+ 
+    static int minTimeToReach(vector<vector<int>>& moveTime) {
+        short n = moveTime.size(), m = moveTime[0].size();
+        vector<int> time(n*m, INT_MAX);
+        priority_queue<uint64_t, vector<uint64_t>, greater<uint64_t>> pq;
+
+        // Start at (0, 0) with time=0 adjust=1
+        pq.emplace(pack(0, 0, 0, 1));
+        time[0] = 0;
+
+        bool adjust=0;
+        while (!pq.empty()) {
+            auto [t, i, j, adjust] = unpack(pq.top());
+            pq.pop();
+        //    cout<<" t="<<int(t)<<" i="<<int(i)<<" j="<<int(j)<<" adjust="<<adjust<<endl;
+            // reach the destination
+            if (i == n - 1 && j == m - 1)
+                return t;
+
+            // Traverse all four directions
+            for (int a = 0; a < 4; a++) {
+                int r = i + d[a], s = j + d[a + 1];
+                if (isOutside(r, s, n, m)) continue;
+
+                // minimum time to reach (r, s)
+                int nextTime = max(t, moveTime[r][s])+1+(!adjust); // Wait if necessary
+
+                // update if this path having quicker time
+                int rs=r*m+s;
+                if (nextTime < time[rs]) {
+                    time[rs] = nextTime;
+                    pq.emplace(pack(nextTime, r, s, !adjust));
+                }
+            }
+        }
+
+        return -1; // never reach
+    }
+};
+

@@ -1,0 +1,60 @@
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode() : val(0), next(nullptr) {}
+ *     ListNode(int x) : val(x), next(nullptr) {}
+ *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+ * };
+ */
+class Solution {
+public:
+double i=0;
+    int getDecimalValue(ListNode* head) {
+
+/*
+        int res = 0;
+            
+            // Traverse the linked list
+            while (head != NULL)
+            {
+                // Calculate the decimal value by multiplying the result by 2 and adding current node's data
+                // Also, use modular division to ensure the result doesn't exceed the maximum value
+                res = ((res * 2) % MOD + head->val) % MOD;
+                
+                // Move to the next node
+                head = head->next;
+            }
+            
+            // Return the final decimal value
+            return res;
+
+        
+    }
+};*/
+
+/*
+int sum=0;
+while(head){
+    sum=sum*2+head->val;
+    head=head->next;
+}
+return sum;
+    }
+};
+*/
+
+
+if(head==NULL)
+    return 0;
+
+
+int sum=getDecimalValue(head->next)+pow(2,i)*head->val;
+i++;
+return sum;
+    }
+};
+
+
+

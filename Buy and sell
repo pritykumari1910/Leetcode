@@ -1,0 +1,24 @@
+const int MAX_SIZE = 1e5 + 1;
+long long prefixSum[MAX_SIZE];
+
+class Solution {
+public:
+    static long long maxProfit(vector<int>& prices, vector<int>& strategy, int k) {
+        const int n = prices.size(), half = k / 2;
+        memset(prefixSum, 0, sizeof(long long) * (n + 1));
+        
+        for (int i = 0; i < n; i++) {
+            prefixSum[i + 1] = prefixSum[i] + 1LL * strategy[i] * prices[i];
+        }
+
+        long long windowSum = reduce(prices.begin() + half, prices.begin() + k, 0LL);
+        long long maxProfit = max(prefixSum[n], windowSum + prefixSum[n] - prefixSum[k]);
+
+        for (int start = 1; start + k <= n; start++) { 
+            windowSum += prices[start + k - 1] - prices[start + half - 1];
+            maxProfit = max(maxProfit, windowSum + prefixSum[n] - prefixSum[start + k] + prefixSum[start]);
+        }
+        
+        return maxProfit;
+    }
+};

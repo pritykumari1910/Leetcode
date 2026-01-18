@@ -1,0 +1,68 @@
+#include <vector>
+#include <algorithm>
+#include <iostream>
+
+using namespace std;
+
+class Solution {
+public:
+    int largestMagicSquare(vector<vector<int>>& grid) {
+        int n = grid.size();
+        int m = grid[0].size();
+        
+        vector<vector<long long>> row_prefix(n, vector<long long>(m + 1, 0));
+        vector<vector<long long>> col_prefix(n + 1, vector<long long>(m, 0));
+
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < m; ++j) {
+                row_prefix[i][j + 1] = row_prefix[i][j] + grid[i][j];
+            }
+        }
+
+        for (int j = 0; j < m; ++j) {
+            for (int i = 0; i < n; ++i) {
+                col_prefix[i + 1][j] = col_prefix[i][j] + grid[i][j];
+            }
+        }
+
+        for (int k = min(n, m); k > 1; --k) {
+            for (int r = 0; r <= n - k; ++r) {
+                for (int c = 0; c <= m - k; ++c) {
+                    
+                    long long target = row_prefix[r][c + k] - row_prefix[r][c];
+                    bool isMagic = true;
+
+                    for (int i = 0; i < k; ++i) {
+                        long long current_row_sum = row_prefix[r + i][c + k] - row_prefix[r + i][c];
+                        if (current_row_sum != target) {
+                            isMagic = false;
+                            break;
+                        }
+                    }
+                    if (!isMagic) continue;
+
+                    for (int j = 0; j < k; ++j) {
+                        long long current_col_sum = col_prefix[r + k][c + j] - col_prefix[r][c + j];
+                        if (current_col_sum != target) {
+                            isMagic = false;
+                            break;
+                        }
+                    }
+                    if (!isMagic) continue;
+
+                    long long d1 = 0, d2 = 0;
+                    for (int i = 0; i < k; ++i) {
+                        d1 += grid[r + i][c + i];
+                        d2 += grid[r + i][c + k - 1 - i];
+                    }
+
+                    if (d1 == target && d2 == target) {
+                        return k;
+                    }
+                }
+            }
+        }
+
+        return 1;
+    }
+};

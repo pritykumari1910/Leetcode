@@ -1,0 +1,81 @@
+class Solution {
+    typedef pair<int, int> pli;
+    class Comparator{
+      public:
+        bool operator()(const pli& a, const pli& b){
+            if (a.first == b.first) return a.second < b.second;
+            return a.first > b.first;
+        }
+    };
+public:
+    long long minimumCost(vector<int>& nums, int k, int dist) {
+        const int size = nums.size();
+        long long result = LLONG_MAX; //Score of optimal window
+        long long curSum = nums[0]; //Score of current window
+        int i = 1, j = 1; //Initial Window from i = 1
+        --k; // We only need k-1 more
+        set <pli> small; //k-smallest for current window
+        priority_queue<pli, vector<pli>, Comparator> pq; //remaining
+
+        while(i <= size - k){
+            bool curDelete = false; /* Deleted current nums[i] for 
+            next window - AN OPTIMIZATION? */
+
+            while(small.size() < k || j <= min(i + dist, size - 1)){
+                int smallSize = small.size();
+
+                //FINDING CURRENT SMALLEST ---------------------------
+
+                pli cur = {INT_MAX, -1};
+                //It could be current nums[j]
+                if (j < size) cur = {nums[j], j};
+                //Or a part of remaining elements in 'PQ'
+                while (!pq.empty() && (j >= size || nums[j] >= pq.top().first)){
+                    pli top = pq.top(); pq.pop();
+                    if (top.second < i) continue;
+                    pq.push(cur); cur = top; break;
+                }
+
+                /*FINDING LARGEST IN 'SMALL' HASH SET, I.E., 
+                AMONG K-SMALLEST-------------------------------------*/
+
+                /* This is needed as even if we have k-smallest 
+                elements in 'SMALL', as the window changes, we can 
+                get 'cur' smaller than those previously selected
+                k-smallest, so we must replace largest among those 
+                with cur.*/
+                pli largest = {INT_MAX , -1};
+                bool needsToChange = false;
+                if (smallSize == k){
+                    largest = *prev(small.end());
+                    if (largest.first >= cur.first) needsToChange = true;
+                }
+
+                //UPDATING THE DATA STRUCTURES-----------------------
+
+                //Push every cur, if not got k-smallest
+                if (smallSize < k) {small.insert(cur); curSum+=cur.first;}
+
+                /*If already got k-smallest but we have largest
+                among k-smallest > cur*/
+                else if(smallSize == k && needsToChange){
+                    small.erase(largest); small.insert(cur);
+                    curSum -= (largest.first - cur.first);
+                    if (largest.second != i) pq.push(largest);
+                    else curDelete = true;
+                } 
+                //Any other case, cur is just extra, a part of 'PQ'
+                else pq.push(cur);
+
+                ++j;
+            } 
+            result = min(result, curSum); //Update result
+            /*Delete the current nums[i], if not already deleted 
+            for next window*/
+            if (!curDelete){
+                bool foundInSmall = small.erase({nums[i], i}); 
+                if (foundInSmall) curSum -= nums[i];
+            } ++i;
+        } return result;
+    }
+};

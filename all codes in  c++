@@ -1,0 +1,24 @@
+constexpr int N=1<<20;
+bitset<N> seen;
+class Solution {
+public:
+    bool hasAllCodes(string& s, int k) {
+        const int n=s.size();
+        if (n<k) return 0;
+        unsigned mask=0;
+        const int M=(1<<(k-1))-1;
+        seen.reset();
+        for(int i=0; i<k; i++) //MSB
+            mask=(mask<<1)+(s[i]-'0');
+        seen[mask]=1;
+    //    cout<<mask<<", ";
+        for(int l=0, r=k; r<n; r++){
+            mask&=M;
+            mask<<=1;
+            mask|=(s[r]-'0');
+            seen[mask]=1;
+    //        cout<<mask<<", ";
+        }
+        return seen.count()==(1<<k);
+    }
+};

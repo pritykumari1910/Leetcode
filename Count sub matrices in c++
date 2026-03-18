@@ -1,0 +1,21 @@
+//translated using AI
+class Solution {
+public:
+    int countSubmatrices(vector<vector<int>>& grid, int k) {
+        int n = grid.size(), m = grid[0].size();
+
+        vector<int> prefix(m, 0);
+        int ans = 0;
+
+        for(int i = 0; i < n; i++){
+            int rowSum = 0;
+            for(int j = 0; j < m; j++){
+                rowSum += grid[i][j];
+                prefix[j] += rowSum;
+
+                if(prefix[j] <= k) ans++;
+            }
+        }
+        return ans;
+    }
+};

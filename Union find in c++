@@ -1,0 +1,60 @@
+constexpr int N=1000;
+int Rt[N], Rk[N]; 
+class UnionFind {
+public:
+    int component;
+    UnionFind(int n) : component(n) {
+        iota(Rt, Rt+n, 0);
+        fill(Rk, Rk+n, 0);
+    }
+    int Find(int x) {
+        return (x==Rt[x])?x:Rt[x]=Find(Rt[x]);
+    }
+    bool Union(int x, int y) {
+        x=Find(x), y=Find(y);
+        if (x==y) return 0;
+        if (Rk[x]>Rk[y]) swap(x, y);
+        Rt[x]=y;
+        if (Rk[x]==Rk[y]) Rk[y]++;
+        component--;
+        return 1;
+    }
+};
+
+class Solution {
+public:
+    static string findTheString(vector<vector<int>>& lcp) {
+        const int n=lcp.size();
+        UnionFind G(n);     
+        // Group indices with the same character
+        for (int i=0; i<n; i++) {
+            if (lcp[i][i]!=n-i) return "";// main diagonal
+            for (int j=i+1; j<n; j++) {
+                if (lcp[i][j]) G.Union(i, j);
+            }
+        }
+
+        // Assign 'a'-'z' to each omponent
+        if (G.component>26) return "";
+        string s(n, 0);
+        char nxt='a';
+        for (int i=0; i<n; i++) {
+            const int root=G.Find(i);
+            if (s[root]==0) { // Root hasn't been assigned a char yet
+                s[root]=nxt++;
+            }
+            s[i]=s[root];
+        }
+
+        for(int i=0; i<n; i++){
+            for(int j=0; j<i; j++){
+                const int x=lcp[i][j];
+                if (x!=lcp[j][i]||x+i>n) return "";// must be symmetry
+                int y=(i<n-1)?lcp[i+1][j+1]:0;
+                y=(s[i]==s[j])?y+1:0;
+                if (x!=y) return "";
+            }
+        }
+        return s;
+    }
+};

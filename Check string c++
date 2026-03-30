@@ -1,0 +1,19 @@
+class Solution {
+public:
+    bool checkStrings(string s1, string s2) {
+        int prime[26] = {2,  3,  5,  7,  11, 13, 17, 19, 23, 29, 31, 37, 41,
+                         43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101};
+
+        const long long mod = 1000000007;
+        long long h1[2] = {1, 1};
+        long long h2[2] = {1, 1};
+
+        for (int i = 0; i < s1.length(); i++) {
+            int off = i & 1;
+            h1[off] = (h1[off] * prime[s1[i] - 'a']) % mod;
+            h2[off] = (h2[off] * prime[s2[i] - 'a']) % mod;
+        }
+
+        return h1[0] == h2[0] && h1[1] == h2[1];
+    }
+};

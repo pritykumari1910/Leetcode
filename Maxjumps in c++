@@ -1,0 +1,36 @@
+class Solution {
+public:
+    int solve(vector<int>& nums, int d , int i , vector<int>&dp){
+        if(dp[i] != -1) return dp[i];
+        int cnt = 1;
+        // cnt is the maximum number of indices which we can visit by jumping from the current position
+        
+        // moving in the left direction first and then exploring it
+        for(int jump = 1 ; i - jump >= 0 && jump <= d ; jump ++){
+            if(nums[i] > nums[i - jump]) cnt = max(cnt , 1 + solve(nums , d , i - jump , dp));
+            // we found a height greater than current height so no further visits possible
+            // so break in this situation
+            else break;
+        }
+
+        // moving in the right direction first and then exploring it
+        for(int jump = 1 ; i + jump < nums.size() && jump <= d ; jump ++){
+            if(nums[i] > nums[i + jump]) cnt = max(cnt , 1 + solve(nums , d , i + jump , dp));
+            // we found a height greater than current height so no further visits possible
+            // so break in this situation
+            else break;
+        }
+        return dp[i] = cnt;
+    }
+    int maxJumps(vector<int>& arr, int d) {
+        // define a dp vector
+        vector<int>dp(arr.size() , -1);
+        // ans store the maximum jumps possible from a starting index.
+        // taking all indices as starting index find the maximum possible number of indices which can be visited
+        int ans = 0;
+        for(int i = 0 ; i < arr.size() ; i ++){
+            ans = max(ans , solve(arr , d , i , dp));
+        }
+        return ans;
+    }
+};

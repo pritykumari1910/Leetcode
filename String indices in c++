@@ -1,0 +1,90 @@
+struct TrieNode {
+    TrieNode* next[26];
+    //Shortest string length passing through this node
+    int min_sz=INT_MAX; 
+    int best_i=-1;      //Index of that shortest string
+};
+
+static constexpr int N=500003; 
+static TrieNode pool[N];
+static int ptr=0;   
+
+struct Trie {
+    TrieNode* root;
+
+    TrieNode* newNode() {
+        TrieNode* node=&pool[ptr++];
+        memset(node->next, 0, sizeof(node->next));
+        node->min_sz=INT_MAX;
+        node->best_i=-1;
+        return node;
+    }
+
+    Trie() {
+        ptr=0; // Reset pool counter
+        root=newNode();
+    }
+
+    void insert(const string& w, int idx) {
+        int wz=w.size();
+        TrieNode* curr=root;
+
+        // Update the root's best_i 
+        if (wz<curr->min_sz) {
+            curr->min_sz=wz;
+            curr->best_i=idx;
+        }
+
+        // Insert backward for suffix matching
+        for (int i=wz-1; i>=0; i--) {
+            int c = w[i]-'a';
+            if (curr->next[c]==NULL) 
+                curr->next[c]=newNode();
+            curr=curr->next[c];
+
+            if (wz<curr->min_sz) {
+                curr->min_sz=wz;
+                curr->best_i=idx;
+            }
+        }
+    }
+
+    int find(const string& q) {
+        TrieNode* curr = root;
+        int best=root->best_i;
+
+        // Search backward 
+        for (int i=q.size()-1; i>=0; i--) {
+            int c=q[i]-'a';
+            if (curr->next[c]==NULL) 
+                break; 
+            curr=curr->next[c];
+            best=curr->best_i;
+        }
+        return best;
+    }
+};
+
+class Solution {
+public:
+    static vector<int> stringIndices(vector<string>& wordsContainer, vector<string>& pagesQuery) {
+        Trie trie;
+        int i=0;
+        for (auto& w : wordsContainer) 
+            trie.insert(w, i++);
+
+        vector<int> ans(pagesQuery.size());
+        i=0;
+        for (auto& q : pagesQuery) 
+            ans[i++]=trie.find(q);
+        
+        return ans;
+    }
+};
+
+auto init=[](){
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    return 'c';
+}();

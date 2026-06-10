@@ -1,0 +1,77 @@
+// 1-based indexed segmented tree defined recursively
+static constexpr int N=1<<17; // 2*bit_ceil(5*10^4)
+int segMin[N], segMax[N]; 
+
+struct segTree {
+    unsigned n;
+    vector<int>& A;
+    segTree(vector<int>& A) : n(A.size()), A(A) {
+        build(1, 0, n-1); 
+    }
+    void build(int idx, int l, int r) {
+        if (l==r) {
+            segMin[idx]=segMax[idx]=A[l]; 
+            return;
+        }
+        const int m=(l+r)>>1;
+        const int L=2*idx, R=L+1;
+        build(L, l, m);
+        build(R, m+1, r);
+        
+        segMax[idx] = max(segMax[L], segMax[R]);
+        segMin[idx] = min(segMin[L], segMin[R]);
+    }
+    // Range Query Max for [ql, qr]
+    int qMax(int idx, int l, int r, int ql, int qr) {
+        if (ql>r || qr<l) return INT_MIN; // Identity for max
+        if (ql<=l && r <= qr) return segMax[idx];
+        const int m=(l+r)>>1;
+        return max(qMax(2*idx, l, m, ql, qr), qMax(2*idx+1, m+1, r, ql, qr));
+    }
+    // Range Query Min for [ql, qr]
+    int qMin(int idx, int l, int r, int ql, int qr) {
+        if (ql>r || qr<l) return INT_MAX; // Identity for min
+        if (ql<=l && r <= qr) return segMin[idx]; 
+        const int m=(l+r)>>1;
+        return min(qMin(2*idx, l, m, ql, qr), qMin(2*idx+1, m+1, r, ql, qr));
+    }
+};
+
+using int3=pair<int, pair<int, int>>;
+using ll=long long;
+class Solution {
+public:
+    static long long maxTotalValue(vector<int>& nums, int k) {
+        const int n=nums.size();
+        auto [it0, itM]=minmax_element(nums.begin(), nums.end());
+        int v0=*itM-*it0;
+        auto [l0, r0]=minmax(it0-nums.begin(), itM-nums.begin());
+        ll ways=(ll)(l0+1)*(n-r0);// when l<=l0 and r>=r0  val(nums[l..r])=v0
+        if (ways>=k) return (ll)k*v0;
+        ll total=ways*v0;
+        k-=ways;
+        
+        segTree tree(nums);
+        priority_queue<int3> pq;
+        
+        // [l, n-1] where l>l0
+        for(int l=l0+1; l<n; l++){
+            const int val=tree.qMax(1,0,n-1,l,n-1)-tree.qMin(1,0,n-1,l,n-1);
+            pq.push({val, {l, n-1}});
+        }
+        // [l, r0-1] where l<=l0
+        for(int l=0; l<=l0; l++){
+            const int val=tree.qMax(1,0,n-1,l,r0-1)-tree.qMin(1,0,n-1,l,r0-1);
+            pq.push({val, {l, r0-1}});
+        }
+       
+        while(k--){
+            auto [x, lr]=pq.top(); pq.pop();
+            auto [l, r]=lr;
+            if (x==0) break;
+            total+=x;
+            if (r>l) pq.push({tree.qMax(1,0,n-1,l,r-1)-tree.qMin(1,0,n-1,l, r-1), {l, r-1}});
+        }
+        return total;
+    }
+};

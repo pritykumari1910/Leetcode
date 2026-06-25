@@ -1,0 +1,31 @@
+//translated using AI
+class Solution {
+public:
+    int countMajoritySubarrays(vector<int>& nums, int target) {
+        int n = nums.size();
+        int balance = n + 1;
+
+        vector<int> freq(2 * n + 2, 0);
+        vector<int> pref(2 * n + 2, 0);
+
+        freq[balance] = 1;
+        pref[balance] = 1;
+
+        int answer = 0;
+
+        for (int num : nums) {
+            if (num == target) {
+                balance++;
+            } else {
+                balance--;
+            }
+
+            freq[balance]++;
+            pref[balance] = pref[balance - 1] + freq[balance];
+
+            answer += pref[balance - 1];
+        }
+
+        return answer;
+    }
+};

@@ -1,0 +1,92 @@
+constexpr int N=5e4, M=1e5;
+struct Edge{ int v, w, nxt=-1; };
+Edge E[M];
+int eIdx=0;
+int adj[N];// heads for linked lists
+inline void addEdge(int u, int v, int w){
+    E[eIdx]={v, w, adj[u]};
+    adj[u]=eIdx++;
+}
+using ll=long long;
+using int2=pair<ll, int>;
+ll dist[N];
+int pathMin[N]; //Tracks minimum edge weight along the path to i
+
+class Solution {
+public:
+    // return the min edge cost
+    static int Dijkstra(int minW, int n, long long k){
+        fill_n(dist, n, LLONG_MAX);
+        memset(pathMin, 0, n*sizeof(int));
+        
+        priority_queue<int2, vector<int2>, greater<int2>> pq;
+        pq.emplace(0, 0);
+        dist[0]=0;
+        pathMin[0]=INT_MAX; // Base case for the starting node
+        
+        while(!pq.empty()){
+            auto [d, u]=pq.top();
+            pq.pop();
+            
+            if (d>dist[u]) continue; 
+            if (d>k) return -1;       // Cost limit exceeded
+            if (u==n-1) return pathMin[u]; //destination
+            
+            for(int idx=adj[u]; idx!=-1; idx=E[idx].nxt){
+                const int v=E[idx].v, w=E[idx].w;
+                if (w<minW) continue;
+                
+                ll d2=d+w;
+                int curMin=min(pathMin[u], w);
+                
+                if (d2<dist[v]){
+                    dist[v]=d2;
+                    pathMin[v]=curMin;
+                    pq.emplace(d2, v);
+                } 
+                else if (d2==dist[v] && curMin>pathMin[v]) {
+                    pathMin[v]=curMin;
+                    pq.emplace(d2, v);
+                }
+            }
+        }
+        return -1; // No path
+    }
+
+    static int findMaxPathScore(vector<vector<int>>& edges, vector<bool>& online, long long k) {
+        const int n=online.size();
+        fill_n(adj, n, -1); 
+        eIdx=0;
+        
+        int mnC=INT_MAX, mxC=-1;
+        for(const auto& e: edges){
+            const int u=e[0], v=e[1], w=e[2];
+            if (online[u] && online[v]) {
+                mnC=min(mnC, w);
+                mxC=max(mxC, w);
+                addEdge(u, v, w);
+            }
+        }
+        
+        int l=mnC, r=mxC, ans=-1;
+        while(l<=r){
+            int mid=l+(r-l)/2;
+            int aMin=Dijkstra(mid, n, k);
+            
+            if (aMin!=-1){
+                ans=max(ans, aMin); 
+                l=aMin+1; 
+            }
+            else 
+                r=mid-1; 
+        }
+        return ans;
+    }
+};
+
+auto init = []() {
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    return 'c';
+}();

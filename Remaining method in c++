@@ -1,0 +1,54 @@
+class Solution {
+public:
+    bool outsideConnection = false;
+    vector<int> mark;
+
+    void bfs(int color, unordered_map<int, vector<int>>& graph, int src){
+        queue<int> q;
+        q.push(src);
+        mark[src] = color;
+
+        while(!q.empty()){
+            int node = q.front();
+            q.pop();
+
+            if(!graph.count(node)) continue;
+
+            for(int nxt : graph[node]){
+                if(mark[nxt] == 1 && color == 2){
+                    outsideConnection = true;
+                    return;
+                }
+
+                if(mark[nxt] != color){
+                    mark[nxt] = color;
+                    q.push(nxt);
+                }
+            }
+        }
+    }
+
+    vector<int> remainingMethods(int n, int k, vector<vector<int>>& edges) {
+        unordered_map<int, vector<int>> graph;
+        mark.assign(n, 0);
+
+        for(auto &e : edges)
+            graph[e[0]].push_back(e[1]);
+
+        bfs(1, graph, k);
+
+        for(int i = 0; i < n; i++){
+            if(i == k || mark[i] == 1) continue;
+            bfs(2, graph, i);
+        }
+
+        vector<int> res;
+
+        for(int i = 0; i < n; i++){
+            if(!outsideConnection && mark[i] == 1) continue;
+            res.push_back(i);
+        }
+
+        return res;
+    }
+};

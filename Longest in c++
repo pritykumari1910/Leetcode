@@ -1,0 +1,102 @@
+#include <vector>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+private:
+    struct Node {
+        int maxLen; // Length of the longest repeating substring inside this segment
+        int ll;     // Length of the matching prefix segment
+        int lr;     // Length of the matching suffix segment
+        int len;    // Total length of the segment covered by this node
+        char cl;    // Character on the leftmost boundary
+        char cr;    // Character on the rightmost boundary
+    };
+
+    vector<Node> tree;
+
+    // Helper method to merge left and right child segments into a single parent node
+    void merge(int i) {
+        Node &parent = tree[i];
+        Node &left = tree[2 * i];
+        Node &right = tree[2 * i + 1];
+
+        parent.cl = left.cl;
+        parent.cr = right.cr;
+        parent.len = left.len + right.len;
+
+        // Base prefix and suffix tracking from children
+        parent.ll = left.ll;
+        parent.lr = right.lr;
+
+        // Base max length is the maximum of either child's internal max
+        parent.maxLen = max(left.maxLen, right.maxLen);
+
+        // Bridge Condition: Check if the children can merge at the boundary line
+        if (left.cr == right.cl) {
+            int bridgeLen = left.lr + right.ll;
+            parent.maxLen = max(parent.maxLen, bridgeLen);
+
+            // If the entire left child is a single repeating character
+            if (left.ll == left.len) {
+                parent.ll = left.len + right.ll;
+            }
+            // If the entire right child is a single repeating character
+            if (right.lr == right.len) {
+                parent.lr = right.len + left.lr;
+            }
+        }
+    }
+
+    // Recursively build the tree from the input string
+    void build(const string &s, int i, int start, int end) {
+        if (start == end) {
+            tree[i] = {1, 1, 1, 1, s[start], s[start]};
+            return;
+        }
+        int mid = start + (end - start) / 2;
+        build(s, 2 * i, start, mid);
+        build(s, 2 * i + 1, mid + 1, end);
+        merge(i);
+    }
+
+    // Point update execution: modify character at target index
+    void update(int i, int start, int end, int idx, char ch) {
+        if (start == end) {
+            tree[i].cl = ch;
+            tree[i].cr = ch;
+            return;
+        }
+        int mid = start + (end - start) / 2;
+        if (idx <= mid) {
+            update(2 * i, start, mid, idx, ch);
+        } else {
+            update(2 * i + 1, mid + 1, end, idx, ch);
+        }
+        merge(i);
+    }
+
+public:
+    vector<int> longestRepeating(string s, string queryCharacters, vector<int>& queryIndices) {
+        // Fast I/O optimization for competitive programming execution speeds
+        ios_base::sync_with_stdio(false);
+        cin.tie(NULL);
+
+        int n = s.length();
+        int k = queryIndices.size();
+        
+        // Allocate space up to 4 * N for standard array-based binary trees
+        tree.resize(4 * n);
+        build(s, 1, 0, n - 1);
+
+        vector<int> result(k);
+        for (int i = 0; i < k; ++i) {
+            update(1, 0, n - 1, queryIndices[i], queryCharacters[i]);
+            result[i] = tree[1].maxLen; // The root node always stores the global answer
+        }
+
+        return result;
+    }
+};

@@ -1,0 +1,5 @@
+class Solution:
+    def maxNumberOfFamilies(self, n: int, a: List[List[int]]) -> int:
+        l,m,r,d = 0b0111100000,0b0001111000,0b0000011110,Counter()
+        for row,seat in a: d[row] |= 1<<seat-1
+        return n*2-sum(2-((q&l<1)+(q&r<1) or q&m<1) for q in d.values())

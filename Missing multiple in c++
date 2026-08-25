@@ -1,0 +1,18 @@
+class Solution {
+public:
+    int missingMultiple(vector<int>& nums, int k) {
+        vector<bool> contains(201, false);
+
+        for (int ele : nums) {
+            contains[ele] = true;
+        }
+
+        int ans = k;
+
+        while (contains[ans]) {
+            ans += k;
+        }
+
+        return ans;
+    }
+};

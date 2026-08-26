@@ -1,0 +1,44 @@
+class Solution {
+public:
+    string shortestBeautifulSubstring(string s, int k) {
+        string smallStr = "";
+        int oneCnt = 0;
+        int left = 0;
+        int right = 0;
+        int len = s.length();
+
+        while (right < len) {
+            if (s[right] == '1') {
+                oneCnt++;
+            }
+
+            while (oneCnt == k) {
+                smallStr = lexico(
+                    smallStr,
+                    s.substr(left, right - left + 1)
+                );
+
+                if (s[left] == '1') {
+                    oneCnt--;
+                }
+
+                left++;
+            }
+
+            right++;
+        }
+
+        return smallStr;
+    }
+
+private:
+    string lexico(string str1, string str2) {
+        if (str1.empty()) return str2;
+
+        if (str1.length() > str2.length()) return str2;
+
+        if (str2.length() > str1.length()) return str1;
+
+        return min(str1, str2);
+    }
+};

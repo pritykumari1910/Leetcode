@@ -1,0 +1,59 @@
+class Solution {
+public:
+    int minMoves(vector<string>& classroom, int energy) {
+        int n = classroom.size(), m = classroom[0].size();
+        int sr = -1, sc = -1;
+        vector<pair<int,int>> trash;
+
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < m; j++) {
+                if (classroom[i][j] == 'S') { sr = i; sc = j; }
+                else if (classroom[i][j] == 'L') trash.push_back({i, j});
+            }
+
+        int k = trash.size();
+        if (k == 0) return 0;
+
+        vector<vector<int>> id(n, vector<int>(m, -1));
+        for (int i = 0; i < k; i++)
+            id[trash[i].first][trash[i].second] = i;
+
+        int fullMask = (1 << k) - 1;
+
+        vector<vector<vector<vector<int>>>> dist(
+            n, vector<vector<vector<int>>>(
+                m, vector<vector<int>>(
+                    energy + 1, vector<int>(1 << k, -1))));
+
+        queue<array<int,4>> q;
+        dist[sr][sc][energy][0] = 0;
+        q.push({sr, sc, energy, 0});
+
+        int dr[] = {-1, 1, 0, 0};
+        int dc[] = {0, 0, -1, 1};
+
+        while (!q.empty()) {
+            auto [r, c, e, mask] = q.front(); q.pop();
+            int moves = dist[r][c][e][mask];
+
+            if (mask == fullMask) return moves;
+
+            for (int d = 0; d < 4; d++) {
+                int nr = r + dr[d], nc = c + dc[d];
+                if (nr < 0 || nr >= n || nc < 0 || nc >= m) continue;
+                if (classroom[nr][nc] == 'X') continue;
+                if (e == 0) continue;
+
+                int ne = e - 1, nmask = mask;
+                if (classroom[nr][nc] == 'L') nmask |= (1 << id[nr][nc]);
+                if (classroom[nr][nc] == 'R') ne = energy;
+
+                if (dist[nr][nc][ne][nmask] == -1) {
+                    dist[nr][nc][ne][nmask] = moves + 1;
+                    q.push({nr, nc, ne, nmask});
+                }
+            }
+        }
+        return -1;
+    }
+};

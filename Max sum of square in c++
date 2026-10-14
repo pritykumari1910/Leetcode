@@ -1,0 +1,6 @@
+class Solution { 
+    public: string maxSumOfSquares(int num, int sum) { 
+        if (sum > 9 * num) return ""; 
+        return string(sum / 9, '9') + (sum % 9 ? to_string(sum % 9) : "") + string(num - sum / 9 - (sum % 9 ? 1 : 0), '0'); 
+    } 
+};

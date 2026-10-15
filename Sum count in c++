@@ -1,0 +1,20 @@
+class Solution {
+public:
+    int sumCounts(vector<int>& nums) {
+        int ans = 0, n = nums.size();
+
+        // Step 1: every index i is a start of a subarray
+        for (int i = 0; i < n; i++) {
+            // a NEW empty set for every start
+            unordered_set<int> st;
+
+            // Step 2: grow the end j to the right
+            for (int j = i; j < n; j++) {
+                st.insert(nums[j]);          // duplicates are ignored
+                int count = st.size();       // distinct count of nums[i..j]
+                ans += count * count;        // add its square
+            }
+        }
+        return ans;
+    }
+};

@@ -1,0 +1,393 @@
+using u8 = uint8_t;
+using u16 = uint16_t;
+using u32 = uint32_t;
+using u64 = uint64_t;
+
+template <typename To>
+inline static constexpr auto cast =
+    []<typename From> [[nodiscard, gnu::always_inline]] (From&& v) noexcept
+{
+    return static_cast<To>(std::forward<From>(v));
+};
+
+inline constexpr u32 kMOD = 1'000'000'007;
+
+struct ModInt
+{
+    u32 value = 0;
+};
+
+[[gnu::always_inline]] constexpr ModInt& operator*=(
+    ModInt& lhs,
+    const ModInt& rhs) noexcept
+{
+    u64 v = rhs.value;
+    v *= lhs.value;
+    if (v >= kMOD) v %= kMOD;
+    lhs.value = cast<u32>(v);
+    return lhs;
+}
+
+[[nodiscard, gnu::always_inline]] constexpr ModInt operator*(
+    ModInt lhs,
+    const ModInt& rhs) noexcept
+{
+    lhs *= rhs;
+    return lhs;
+}
+
+template <std::size_t lim_factorial>
+constexpr ModInt binomial_coefficient(
+    const std::array<ModInt, lim_factorial>& factorials,
+    const std::array<ModInt, lim_factorial>& inverse_factorials,
+    u32 n,
+    u32 k) noexcept
+{
+    assert(n >= k);
+    return factorials[n] * inverse_factorials[k] * inverse_factorials[n - k];
+}
+
+template <u32 max_index>
+inline constexpr auto factorials_mods()
+{
+    std::array<ModInt, max_index + 1> r;  // NOLINT
+    r[0] = ModInt{1};
+    for (u32 i = 1; i != r.size(); ++i)
+    {
+        r[i] = r[i - 1] * ModInt{i};
+    }
+
+    return r;
+}
+
+[[nodiscard, gnu::always_inline]] constexpr ModInt inverse(ModInt x) noexcept
+{
+    auto a = x.value;
+    u32 x0 = 1, x1 = 0, mod = kMOD;
+    while (a)
+    {
+        u32 q = mod / a;
+        u32 r = mod % a;
+        u32 x2 = x1 - q * x0;
+        mod = a;
+        a = r;
+        x1 = x0;
+        x0 = x2;
+    }
+    return {(x1 + kMOD) % kMOD};
+}
+
+template <std::size_t size>
+inline constexpr auto mod_int_inv_precompute(
+    const std::array<ModInt, size>& divisors)
+{
+    std::array<ModInt, size> inverses;
+    for (std::size_t i = 0; i != size; ++i)
+    {
+        assert(divisors[i].value != 0);
+        inverses[i] = inverse(divisors[i]);
+    }
+    return inverses;
+}
+
+template <typename B, typename F>
+[[gnu::always_inline]] constexpr void pbs_for_each_layer(F&& f) noexcept
+{
+    [&]<size_t... layer> [[gnu::always_inline]] (
+        std::index_sequence<layer...>) noexcept
+    {
+        (f(std::integral_constant<size_t, layer>{}), ...);
+    }(std::make_index_sequence<B::kNumLayers>());
+}
+
+template <typename B, typename F>
+[[gnu::always_inline]] constexpr void pbs_for_each_layer_reversed(
+    F&& f) noexcept
+{
+    pbs_for_each_layer<B>(
+        [&] [[gnu::always_inline]] (auto layer) noexcept
+        { f(std::integral_constant<size_t, B::kNumLayers - (layer + 1)>{}); });
+}
+
+template <std::integral T>
+[[nodiscard, gnu::always_inline]] static constexpr T ceil_div(
+    T a,
+    std::type_identity_t<T> b) noexcept
+{
+    return (a + (b - 1)) / b;
+}
+
+template <u64 value>
+using UintForValue = std::conditional_t < value < (1 << 8),
+      u8,
+      std::conditional_t <
+          value<
+              (1 << 16),
+              u16,
+              std::conditional_t<value<(1UL << 32), u32, u64>>>;
+
+template <size_t capacity, typename Word = u64>
+struct PyramidBitset
+{
+    static constexpr size_t kCapacity = capacity;
+    using ValueType = UintForValue<capacity - 1>;
+    static constexpr size_t kWordSize = sizeof(Word) * 8;
+    static constexpr u8 kMask = kWordSize - 1;
+    static constexpr int kShift = std::bit_width(kMask);
+    static constexpr size_t kNumLayers =
+        ceil_div(std::bit_width(capacity), kShift);
+    static constexpr auto kLayersSizes = []
+    {
+        std::array<size_t, kNumLayers> sizes{};
+        for (size_t i = 0, x = capacity; i != sizes.size(); ++i)
+        {
+            x = ceil_div(x, kWordSize);
+            sizes[i] = x;
+        }
+        return sizes;
+    }();
+    static constexpr size_t kTotalWords =
+        std::accumulate(kLayersSizes.begin(), kLayersSizes.end(), 0UZ);
+    std::array<Word, kTotalWords> words;
+
+    static constexpr auto offsets = []
+    {
+        std::array<size_t, kNumLayers> offsets;  // NOLINT
+        std::exclusive_scan(
+            kLayersSizes.begin(),
+            kLayersSizes.end(),
+            offsets.begin(),
+            size_t{});
+        return offsets;
+    }();
+};
+
+template <size_t capacity, typename Word>
+[[gnu::always_inline]] constexpr void pbs_add(
+    PyramidBitset<capacity, Word>& bits,
+    typename PyramidBitset<capacity, Word>::ValueType v) noexcept
+{
+    using B = PyramidBitset<capacity, Word>;
+    pbs_for_each_layer<B>(
+        [&] [[gnu::always_inline]] (auto layer) noexcept
+        {
+            typename B::ValueType wi = v >> B::kShift;
+            bits.words[B::offsets[layer] + wi] |= Word{1} << (v & B::kMask);
+            v = wi;
+        });
+}
+
+template <size_t capacity, typename Word>
+[[gnu::always_inline]] constexpr void pbs_add_if(
+    PyramidBitset<capacity, Word>& bits,
+    typename PyramidBitset<capacity, Word>::ValueType v,
+    bool c) noexcept
+{
+    using B = PyramidBitset<capacity, Word>;
+    pbs_for_each_layer<B>(
+        [&] [[gnu::always_inline]] (auto layer) noexcept
+        {
+            typename B::ValueType wi = v >> B::kShift;
+            bits.words[B::offsets[layer] + wi] |= Word{c} << (v & B::kMask);
+            v = wi;
+        });
+}
+
+template <size_t capacity, typename Word>
+[[nodiscard, gnu::always_inline]] constexpr bool pbs_add_ex(
+    PyramidBitset<capacity, Word>& bits,
+    typename PyramidBitset<capacity, Word>::ValueType v) noexcept
+{
+    using B = PyramidBitset<capacity, Word>;
+    bool added = false;
+    pbs_for_each_layer<B>(
+        [&] [[gnu::always_inline]] (auto layer) noexcept
+        {
+            typename B::ValueType wi = v >> B::kShift;
+            auto& word = bits.words[B::offsets[layer] + wi];
+            Word m = Word{1} << (v & B::kMask);
+            if constexpr (layer == 0)
+            {
+                added = (word & m) == 0;
+            }
+            word |= m;
+            v = wi;
+        });
+    return added;
+}
+
+// Strict successor; returns capacity when absent.
+// One top-down pass takes O(log_word_size(capacity)).
+template <size_t capacity, typename Word>
+[[nodiscard, gnu::always_inline]] constexpr size_t pbs_next(
+    const PyramidBitset<capacity, Word>& bits,
+    size_t position) noexcept
+{
+    using B = PyramidBitset<capacity, Word>;
+    assert(position < capacity);
+    size_t result = capacity;
+    pbs_for_each_layer_reversed<B>(
+        [&] [[gnu::always_inline]] (auto layer) noexcept
+        {
+            if constexpr (layer + 1 < B::kNumLayers)
+            {
+                // Refine the fallback from above. Padding bits and the
+                // absent sentinel must never become word indices.
+                const size_t valid_mask =
+                    size_t{0} - size_t{result < B::kLayersSizes[layer]};
+                const Word word =
+                    bits.words[B::offsets[layer] + (result & valid_mask)];
+                const size_t descendant = (result << B::kShift) +
+                                          cast<size_t>(std::countr_zero(word));
+                result = (descendant & valid_mask) | (capacity & ~valid_mask);
+            }
+
+            // A neighbour on the query's path is closer than the fallback.
+            const size_t query = position >> (layer * B::kShift);
+            const size_t wi = query >> B::kShift;
+            const size_t bi = query & B::kMask;
+            Word candidates = bits.words[B::offsets[layer] + wi];
+            // Separate shifts avoid shifting by the word width.
+            candidates >>= bi;
+            candidates >>= 1;
+            const size_t candidate =
+                query + 1 + cast<size_t>(std::countr_zero(candidates));
+            const size_t mask = size_t{0} - size_t{candidates != 0};
+            result ^= (result ^ candidate) & mask;
+        });
+    return std::min(result, capacity);
+}
+
+// Strict predecessor; returns capacity when absent.
+// One top-down pass takes O(log_word_size(capacity)).
+template <size_t capacity, typename Word>
+[[nodiscard, gnu::always_inline]] constexpr size_t pbs_prev(
+    const PyramidBitset<capacity, Word>& bits,
+    size_t position) noexcept
+{
+    using B = PyramidBitset<capacity, Word>;
+    assert(position < capacity);
+    size_t result = capacity;
+    pbs_for_each_layer_reversed<B>(
+        [&] [[gnu::always_inline]] (auto layer) noexcept
+        {
+            if constexpr (layer + 1 < B::kNumLayers)
+            {
+                // Refine the fallback from above. Padding bits and the
+                // absent sentinel must never become word indices.
+                const size_t valid_mask =
+                    size_t{0} - size_t{result < B::kLayersSizes[layer]};
+                const Word word =
+                    bits.words[B::offsets[layer] + (result & valid_mask)];
+                const size_t descendant = (result << B::kShift) + B::kMask -
+                                          cast<size_t>(std::countl_zero(word));
+                result = (descendant & valid_mask) | (capacity & ~valid_mask);
+            }
+
+            // A neighbour on the query's path is closer than the fallback.
+            const size_t query = position >> (layer * B::kShift);
+            const size_t wi = query >> B::kShift;
+            const size_t bi = query & B::kMask;
+            Word candidates = bits.words[B::offsets[layer] + wi];
+            candidates &= (Word{1} << bi) - 1;
+            const size_t candidate = (wi << B::kShift) + B::kMask -
+                                     cast<size_t>(std::countl_zero(candidates));
+            const size_t mask = size_t{0} - size_t{candidates != 0};
+            result ^= (result ^ candidate) & mask;
+        });
+    return std::min(result, capacity);
+}
+#ifndef LC_LOCAL_BUILD
+auto init = []()
+{
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    std::cout.tie(nullptr);
+    return 'c';
+}();
+#endif
+
+inline constexpr u32 kNullNode = 1023;
+
+struct Node
+{
+    u32 v : 10 = 0;
+    u32 l : 10 = kNullNode;
+    u32 r : 10 = kNullNode;
+};
+
+class Solution
+{
+public:
+    inline static u16 node_id_map[1002];
+    inline static Node nodes[1001];
+    inline static u16 sizes[kNullNode + 1];
+    inline static ModInt ways[kNullNode + 1];
+    inline static constexpr auto factorials = factorials_mods<1000>();
+    inline static constexpr auto inverse_factorials =
+        mod_int_inv_precompute(factorials);
+
+    // Two bitset layers for values 1..1000: O(n) construction.
+    [[gnu::no_sanitize_address, gnu::flatten]]
+    static void construct_tree(const std::vector<int>& nums) noexcept
+    {
+        nodes[0] = {};
+        nodes[0].v = nums[0] & 1023;
+        PyramidBitset<1001> inserted{};
+        // A missing neighbour selects the root (the earliest inserted node).
+        node_id_map[inserted.kCapacity] = 0;
+        node_id_map[nodes[0].v] = 0;
+        pbs_add(inserted, nums[0] & 1023);
+
+        for (size_t i = 1; i != nums.size(); ++i)
+        {
+            u16 node_id = i & 0xFFFF;
+            u16 value = nums[i] & 1023;
+            auto next = pbs_next(inserted, value);
+            auto prev = pbs_prev(inserted, value);
+            const u16 parent_id =
+                std::max(node_id_map[next], node_id_map[prev]);
+
+            nodes[node_id] = {};
+            nodes[node_id].v = nums[i] & 1023;
+            auto& parent = nodes[parent_id];
+            if (nums[i] < parent.v)
+            {
+                parent.l = node_id;
+            }
+            else
+            {
+                parent.r = node_id;
+            }
+            node_id_map[value] = node_id;
+            pbs_add(inserted, value);
+        }
+    }
+
+    [[gnu::no_sanitize_address, gnu::flatten]]
+    u32 numOfWays(const std::vector<int>& nums) noexcept
+    {
+        construct_tree(nums);
+
+        sizes[kNullNode] = 0;
+        ways[kNullNode] = {1};
+        for (size_t i = nums.size(); i != 0;)
+        {
+            const auto& node = nodes[--i];
+            const u16 left = sizes[node.l];
+            const u16 right = sizes[node.r];
+            auto count = ways[node.l] * ways[node.r];
+            if (left && right)
+            {
+                count *= binomial_coefficient(
+                    factorials,
+                    inverse_factorials,
+                    left + right,
+                    right);
+            }
+            sizes[i] = left + right + 1;
+            ways[i] = count;
+        }
+        return ways[0].value - 1;
+    }
+};

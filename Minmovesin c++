@@ -1,0 +1,27 @@
+class Solution {
+public:
+    int minMoves2(vector<int>& nums) {
+        int n = nums.size(), k = n / 2;
+        int lo = 0, hi = n - 1;
+        while (lo < hi) {
+            int pivot = nums[lo + rand() % (hi - lo + 1)];
+            int lt = lo, gt = hi, i = lo;
+            while (i <= gt) {
+                if (nums[i] < pivot) {
+                    swap(nums[lt++], nums[i++]);
+                } else if (nums[i] > pivot) {
+                    swap(nums[i], nums[gt--]);
+                } else {
+                    i++;
+                }
+            }
+            if (k < lt) hi = lt - 1;
+            else if (k > gt) lo = gt + 1;
+            else break;
+        }
+        int median = nums[k];
+        long long res = 0;
+        for (int x : nums) res += llabs((long long)x - median);
+        return (int)res;
+    }
+};
